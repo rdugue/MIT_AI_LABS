@@ -174,8 +174,46 @@ def do_multiply(expr1, expr2):
     '*' will not help you.
     """
     # Replace this with your solution.
+    def simp(prod):
+        if len(prod) < 2 and isinstance(prod[0], (int, str)):
+            return prod[0]
+        else:
+            total = 0
+            for term1 in prod:
+                if isinstance(term1, int) and isinstance(total, int):
+                    total = term1 if total == 0 else total * term1
+                elif isinstance(total, int) and isinstance(term1, Product):
+                    total = simp(term1) if total == 0 else total * simp(term1)
+                elif isinstance(total, int):
+                    total = Sum([total, term1])
+                elif isinstance(total, str) and isinstance(term1, int):
+                    total = Sum([term1, total])
+                elif isinstance(term1, int):
+                    total[0] = term1 if total[0] == 0 else total[0] * term1
+                elif isinstance(term1, str):
+                    total.append(term1)
+                else:
+                    total[0] = simp(term1) if total[0] == 0 else total[0] * simp(term1)
+            return total if isinstance(total, (int, str)) else total.simplify()
+
+    expr3 = Sum([])
     if isinstance(expr1, Sum) and isinstance(expr2, Sum):
-        expr3 = []
-
-
+        for term in expr1:
+            for term2 in expr2:
+                term3 = Product([term, term2])
+                expr3.append(simp(term3))
+    elif isinstance(expr1, Sum) and isinstance(expr2, Product):
+        for term in expr1:
+            term2 = Product([expr2, term])
+            expr3.append(simp(term2))
+    elif isinstance(expr1, Product) and isinstance(expr2, Sum):
+        for term in expr2:
+            term2 = Product([expr1, term])
+            expr3.append(simp(term2))
+    else:
+        term = simp(expr1)
+        term2 = simp(expr2)
+        term3 = simp(Product([term, term2]))
+        expr3.append(term3)
+    return expr3
 
